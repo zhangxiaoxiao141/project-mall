@@ -4,7 +4,8 @@
         <home-swiper :banners="this.banners"></home-swiper>  
         <recommend-view :recommends="this.recommends"></recommend-view>
         <feature-view></feature-view>
-        <tab-control class="tab-control" :titles="['流行','新款','精选']"></tab-control>  
+        <tab-control class="tab-control" :titles="['流行','新款','精选']" @tabClick="tabClick"></tab-control>
+        <goods-list :goods="showGoods"></goods-list>  
 
         <ul>
             <li>列表1</li>
@@ -118,7 +119,8 @@ import RecommendView from './childComps/RecommendView';
 import FeatureView from './childComps/FeatureView';
 
 import NavBar from 'components/common/navbar/NavBar';
-import TabControl from '@/components/content/tabControl/TabControl';
+import TabControl from 'components/content/tabControl/TabControl';
+import GoodsList from 'components/content/goods/GoodsList'
 
 import {getHomeMultidata, getHomeGoods} from 'network/home'
 export default {
@@ -129,7 +131,8 @@ export default {
         RecommendView,
         FeatureView,
         TabControl,
-        getHomeGoods
+        getHomeGoods,
+        GoodsList
     },
     data(){
         return {
@@ -137,9 +140,10 @@ export default {
             recommends:[],
             goods:{
                 'pop':{page: 0,list:[]},
-                'news':{page: 0,list:[]},
+                'new':{page: 0,list:[]},
                 'sell':{page: 0,list:[]},
-            }
+            },
+            currentType: 'pop'
         }
     },
     created() {
@@ -148,7 +152,27 @@ export default {
         this.getHomeGoods('new'),
         this.getHomeGoods('sell')
     },
+    computed: {
+        showGoods() {
+            return this.goods[this.currentType].list
+        }
+    },
     methods:{
+        /*事件监听相关的*/
+        tabClick(index){
+            switch (index){
+                case 0:
+                    this.currentType = 'pop'
+                    break
+                case 1:
+                    this.currentType = 'new'
+                    break
+                case 2:
+                    this.currentType = 'sell'
+                    break
+            }
+        },
+        /*网络请求相关的 */
         getHomeMultidata() {
             getHomeMultidata().then(res => {
                 this.banners = res.data.banner.list
@@ -156,9 +180,9 @@ export default {
             })
         },
         getHomeGoods(type){
-            getHomeGoods(type,1).then(res => {
-            console.log(res)
-            console.log(111111)
+            const page = this.goods[type].page + 1
+            getHomeGoods(type,page).then(res => {
+                this.goods[type].list.push(...res.data.list)
             })
         }
     }
@@ -183,5 +207,6 @@ export default {
 .tab-control{
     position: sticky;
     top: 44px;
+    z-index: 9;
 }
 </style>
