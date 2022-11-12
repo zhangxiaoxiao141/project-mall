@@ -32,20 +32,29 @@ export default {
             probeType:this.probeType,
             pullUpLoad:this.pullUpLoad
         })
-        this.scroll.on('scroll',(position) => {
+        if (this.probeType === 2 || this.probeType === 3){
+            this.scroll.on('scroll',(position) => {
             this.$emit('scroll',position)
-        })
-        this.scroll.on('pullingUp',() => {
+            })
+        }
+        if (this.pullUpLoad){
+            this.scroll.on('pullingUp',() => {
             this.$emit('pullingUp')
-        })
+            })
+        }
+        //this.scroll.refresh()
 
     },
     methods:{
         scrollTo(x,y,time=300){
-            this.scroll.scrollTo(x,y,time)
+            this.scroll && this.scroll.scrollTo(x,y,time)
         },
         finishPullUp(){
-            this.scroll.finishPullUp()
+            this.scroll && this.scroll.finishPullUp()
+        },
+        refresh(){
+            //console.log(21111111111)
+            this.scroll && this.scroll.refresh()
         }
     }
 }
