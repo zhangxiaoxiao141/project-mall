@@ -1,6 +1,6 @@
 <template>
     <div class="goods-item">
-        <img :src="goodsItem.show.img" alt="" @load="imageLoad">
+        <img :src="showImage" alt="" @load="imageLoad" @click="itemClick">
         <div class="goods-info">
             <p>{{goodsItem.title}}</p>
             <span class="price">{{goodsItem.price}}</span>
@@ -21,9 +21,36 @@ export default {
             }
         }
     },
+    data(){
+      return {
+        product:null
+      }
+    },
+    computed:{
+      showImage(){
+        return this.goodsItem.image || this.goodsItem.show.img
+      }
+    },
     methods:{
       imageLoad(){
         this.$bus.$emit('itemImageLoad')
+        //根据路由监听事件
+        /* if (this.$route.path.indexOf('home')){
+          this.$bus.$emit('homeitemImageLoad')
+        }
+        else if(this.$route.path.indexOf('/detail')){
+          this.$bus.$emit('detailitemImageLoad')
+        } */
+      },
+      itemClick(){
+        //console.log('跳转到详情页');
+        this.$router.push('/detail/' + this.goodsItem.iid)
+        /* this.$router.push({
+          path:'/detail',
+          query:{
+            
+          }
+        }) */
       }
     }
 

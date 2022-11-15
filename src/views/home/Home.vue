@@ -36,10 +36,10 @@ import FeatureView from './childComps/FeatureView';
 import NavBar from 'components/common/navbar/NavBar';
 import TabControl from 'components/content/tabControl/TabControl';
 import GoodsList from 'components/content/goods/GoodsList'
-import BackTop from '@/components/content/backtop/BackTop';
 
 import {getHomeMultidata, getHomeGoods} from 'network/home';
-import {debounce} from 'common/utils';
+//mport {debounce} from 'common/utils';
+import { itemListenerMixin,backTopMixin } from '@/common/mixin';
 
 import Scroll from '@/components/common/scroll/Scroll';
 export default {
@@ -52,9 +52,9 @@ export default {
         TabControl,
         getHomeGoods,
         GoodsList,
-        Scroll,
-        BackTop
+        Scroll
     },
+    mixins:[itemListenerMixin,backTopMixin],
     data(){
         return {
             banners:[],
@@ -65,9 +65,10 @@ export default {
                 'sell':{page: 0,list:[]},
             },
             currentType: 'pop',
-            isShowBackTop: false,
             tabOffsetTop: 0,
-            isTabFixed: false
+            isTabFixed: false,
+            saveY: 0,
+            //itemImageListener:null
         }
     },
     created() {
@@ -79,7 +80,6 @@ export default {
 
     },
     mounted(){
-        const refresh = debounce(this.$refs.scroll.refresh,200)
         /* const refresh = function(...args){
                 if (timer){
                     clearTimeout
@@ -89,17 +89,30 @@ export default {
                 },delay)
             } */
         //监听item中图片加载完成
-        this.$bus.$on('itemImageLoad',() => {
+        /* const refresh = debounce(this.$refs.scroll.refresh,200)
+        this.itemImageListener = () => {
             //this.$refs.scroll && this.$refs.scroll.refresh
             refresh()
-        })
+        }
+        this.$bus.$on('itemImageLoad',this.itemImageListener) */
         //赋值
         //this.tabOffsetTop = this.$refs.tabControl.$el.offsetTop
     },
     computed: {
         showGoods() {
             return this.goods[this.currentType].list
-        }
+        },
+        activated() {
+            this.$refs.scroll.scrollTo(0, this.saveY, 0)
+
+            this.$refs.scroll.refresh()
+        },
+        deactivated() {
+            this.saveY = this.$refs.scroll.getScrollY()
+
+            //离开时取消总线事件监听
+            this.$bus.$off('itemImageLoad',this.itemImageListener)
+        },
     },
     methods:{
         /*事件监听相关的*/
@@ -117,9 +130,6 @@ export default {
             }
             this.$refs.tabControl1.currentIndex = index;
             this.$refs.tabControl2.currentIndex = index;
-        },
-        backClick(){
-            this.$refs.scroll.scrollTo(0,0,500)
         },
         contentScroll(position){
             this.isShowBackTop = (-position.y) > 1000
